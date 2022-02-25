@@ -121,10 +121,41 @@ sudo swapoff -a # disable swap
 sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab # disable it completely.
 ```
 
+### 3. Master setup 
 
+#### 3.1. Initialize the master
 
+```
+#Change your docker driver
 
+touch /etc/docker/daemon.json
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+ "exec-opts": ["native.cgroupdriver=systemd"],
+ "log-driver": "json-file",
+ "log-opts": {
+   "max-size": "100m"
+ },
+ "storage-driver": "overlay2"
+}
+EOF
 
+systemctl daemon-reload && systemctl restart docker
+```
+
+```
+sudo kubeadm init --apiserver-advertise-address=192.168.56.80 --pod-network-cidr=192.168.0.0/16
+```
+
+#### 3.2. Install Calico
+
+```
+#Install the Tigera Calico operator and custom resource definitions.
+kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
+
+#Install Calico by creating the necessary custom resource. For more information on configuration options available in this manifest, see the installation reference.
+kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
+```
 
 
 
@@ -133,3 +164,5 @@ Resources:
 1. https://kosyfrances.com/kubernetes-cluster/
 2. https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/
 3. https://docs.docker.com/engine/install/ubuntu/
+4. https://projectcalico.docs.tigera.io/getting-started/kubernetes/quickstart
+5. https://sysnet4admin.gitbook.io/k8s/trouble-shooting/cluster-build/kubelet-is-not-properly-working-on-1.22-version
