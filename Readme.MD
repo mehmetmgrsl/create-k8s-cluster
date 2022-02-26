@@ -111,23 +111,10 @@ sudo apt-get install -y kubelet=1.23.0-00 kubectl=1.23.0-00 kubeadm=1.23.0-00
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
-#### 2.3. We need to disable swap in order for the kubelet to work well
+
+#### 2.4.  Change your docker driver
 
 ```
-sudo swapoff -a # disable swap
-```
-
-```
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab # disable it completely.
-```
-
-### 3. Master setup 
-
-#### 3.1. Initialize the master
-
-```
-#Change your docker driver
-
 touch /etc/docker/daemon.json
 cat <<EOF | sudo tee /etc/docker/daemon.json
 {
@@ -143,6 +130,20 @@ EOF
 systemctl daemon-reload && systemctl restart docker
 ```
 
+#### 2.4. We need to disable swap in order for the kubelet to work well
+
+```
+sudo swapoff -a # disable swap
+```
+
+```
+sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab # disable it completely.
+```
+
+### 3. Master node setup 
+
+#### 3.1. Initialize the master
+
 ```
 sudo kubeadm init --apiserver-advertise-address=192.168.56.80 --pod-network-cidr=192.168.0.0/16
 ```
@@ -155,6 +156,18 @@ kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator
 
 #Install Calico by creating the necessary custom resource. For more information on configuration options available in this manifest, see the installation reference.
 kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml
+```
+
+### 4. Worker node setup 
+
+At the end of the 'kubeadm init' command you can find a needed command like below to join the cluster:
+```
+sudo kubeadm join --token <TOKEN> <MASTER-IP>:<MASTER-PORT> --discovery-token-ca-cert-hash sha256:<hash>
+```
+
+Note: You can recreate a token and print a join command in the MASTER node with running the below command:
+```
+kubeadm token create --print-join-command
 ```
 
 
