@@ -35,8 +35,7 @@ worker1 node:
 
 ### 2. Common setup for the VMs
 
-- **Install and configure prerequisites**
-- Letting iptables see bridged traffic 
+- **Install and configure prerequisites - Letting iptables see bridged traffic**
  
 ```
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
