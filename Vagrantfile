@@ -1,24 +1,32 @@
-Vagrant.configure("2") do |config|
+IMAGE_NAME = "bento/ubuntu-20.04"
+N = 1 # Number of the worker nodes
 
-  config.vm.define "k8s-master" do |kubemaster|
-    kubemaster.vm.hostname = "k8s-master"
-    kubemaster.vm.box = "bento/ubuntu-20.04"
-    kubemaster.vm.network "private_network", ip: "192.168.56.80"
-    kubemaster.vm.provider "virtualbox" do |vb|
-      vb.memory = "2048"
-      vb.cpus = 2
-    end
-  end
+Vagrant.configure(2) do |config|     
 
-  (1..2).each do |i|
-    config.vm.define "k8s-worker#{i}" do |worker|
-      worker.vm.hostname = "k8s-worker#{i}"
-      worker.vm.box = "bento/ubuntu-20.04"
-      worker.vm.network "private_network", ip: "192.168.56.8#{i}"
-      worker.vm.provider "virtualbox" do |vb|
-        vb.memory = "2048"
-        vb.cpus = 2
-      end
+    config.vm.provision "file", source: "~/.ssh/vagrant_key.pub", destination: "/home/vagrant/.ssh/vagrant_key.pub"
+    config.vm.provision :shell, privileged: true, :inline => "cat /home/vagrant/.ssh/vagrant_key.pub >> /home/vagrant/.ssh/authorized_keys", run: "always"
+
+    # Configure master node  
+    config.vm.define "k8s-master" do |master|
+        master.vm.box = IMAGE_NAME
+        master.vm.network "private_network", ip: "192.168.56.15"
+        master.vm.hostname = "k8s-master"
+        master.vm.provider "virtualbox" do |v|
+            v.memory = 2048
+            v.cpus = 2
+        end
     end
-  end
+
+    # Configure worker nodes
+    (1..N).each do |i|
+        config.vm.define "worker#{i}" do |worker|
+            worker.vm.box = IMAGE_NAME
+            worker.vm.network "private_network", ip: "192.168.56.#{i+15}"
+            worker.vm.hostname = "worker#{i}"
+            worker.vm.provider "virtualbox" do |v|
+                v.memory = 2048
+                v.cpus = 2
+            end
+        end
+    end
 end
