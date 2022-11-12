@@ -137,7 +137,33 @@ Note: You can recreate a token and print a join command in the MASTER node with 
 kubeadm token create --print-join-command
 ```
 
+### 5. Access kubernetes cluster in your local machine:
 
+- 5.1 Access master node like below:
+
+```ssh vagrant@192.168.56.15 -i $HOME/.ssh/vagrant_key```
+
+- 5.2 Copy the content of the /etc/kubernetes/admin.conf file
+
+- 5.3 Create a conf file on your local machine and paste the content of the previous step into it.
+
+i.e -> $HOME/.kube/config.yaml
+
+- 5.4 Set the KUBECONFIG environment variable, i.e like below:
+
+```export KUBECONFIG=$HOME/.kube/config.yaml```
+
+- 5.5 Run the kubectl get nodes to check whether you can access the cluster or not:
+
+```kubectl get nodes```
+
+Output should be like below:
+
+```
+NAME         STATUS   ROLES                  AGE   VERSION
+k8s-master   Ready    control-plane,master   58m   v1.23.0
+worker1      Ready    <none>                 46m   v1.23.0
+```
 
 
 Resources:
