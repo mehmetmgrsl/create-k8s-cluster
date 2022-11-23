@@ -60,7 +60,8 @@ sudo sysctl --system
 #### 2.1. Installing the container runtime (containerd)
 
  ```
- sudo apt-get update && sudo apt-get install -y containerd
+ sudo apt-get update
+ sudo apt-get install -y containerd
  sudo mkdir -p /etc/containerd
  sudo containerd config default | sudo tee /etc/containerd/config.toml
  sudo systemctl restart containerd
@@ -88,6 +89,7 @@ echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https:/
 ```
 sudo apt-get update
 sudo apt-get install -y kubelet=1.23.0-00 kubectl=1.23.0-00 kubeadm=1.23.0-00
+# sudo apt-get install -y kubelet=1.24.3-00 kubectl=1.24.3-00 kubeadm=1.24.3-00
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
@@ -108,12 +110,16 @@ sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab # disable it completely.
 #### 3.1. Initialize the master
 
 ```
-sudo kubeadm init --apiserver-advertise-address=192.168.56.15 --pod-network-cidr=192.168.0.0/16
+sudo kubeadm init --kubernetes-version=v1.23.0 --apiserver-advertise-address=192.168.56.15 --pod-network-cidr=192.168.0.0/16
+# sudo kubeadm init --kubernetes-version=v1.24.3 --apiserver-advertise-address=192.168.56.15 --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all  --cri-socket /run/containerd/containerd.sock
 ```
 
 set the KUBECONFIG env variable like below:
-```export KUBECONFIG=/etc/kubernetes/admin.conf```
-
+```
+cp /etc/kubernetes/admin.conf $HOME/
+chown $(id -u):$(id -g) $HOME/admin.conf
+export KUBECONFIG=$HOME/admin.conf
+```
 
 #### 3.2. Install Calico
 
